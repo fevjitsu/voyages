@@ -94,17 +94,6 @@ function App() {
               that captures the spirit of exploration and the thrill of the
               hunt. Join Captain Bartley and his crew as they navigate the
               perils of the sea in pursuit of glory and fortune.
-              <span className="invisible">
-                pirate fantasy, young adult fantasy, fantasy adventure, pirate
-                books for teens, seafaring fantasy, pirate fantasy with magic,
-                fantasy pirates on the high seas, young adult fantasy pirates,
-                swashbuckling fantasy, mythical creatures at sea, female pirate,
-                young adult fantasy with strong female protagonist, mythical
-                creatures at sea, fantasy pirates with powers, dark pirate
-                fantasy, humorous pirate fantasy, gritty pirate fantasy, best
-                young adult pirate fantasy novels, fantasy books about pirates
-                for teenagers, where t find a good pirate fantasy books
-              </span>
             </p>
           </div>
           <div>
@@ -140,17 +129,6 @@ function App() {
               Captain Bartley allows one of his young crew members to visit
               home, a place now hidden from the world, a place of myth and
               conspiracy. Join the crew on their enlightening adventure. &nbsp;
-              <span className="invisible">
-                pirate fantasy, young adult fantasy, fantasy adventure, pirate
-                books for teens, seafaring fantasy, pirate fantasy with magic,
-                fantasy pirates on the high seas, young adult fantasy pirates,
-                swashbuckling fantasy, mythical creatures at sea, female pirate,
-                young adult fantasy with strong female protagonist, mythical
-                creatures at sea, fantasy pirates with powers, dark pirate
-                fantasy, humorous pirate fantasy, gritty pirate fantasy, best
-                young adult pirate fantasy novels, fantasy books about pirates
-                for teenagers, where t find a good pirate fantasy books
-              </span>
             </p>
           </div>
           <div>
@@ -159,6 +137,19 @@ function App() {
             <br />
           </div>
         </div>
+      </div>
+      <div className="invisible">
+        <p>
+          pirate fantasy, young adult fantasy, fantasy adventure, pirate books
+          for teens, seafaring fantasy, pirate fantasy with magic, fantasy
+          pirates on the high seas, young adult fantasy pirates, swashbuckling
+          fantasy, mythical creatures at sea, female pirate, young adult fantasy
+          with strong female protagonist, mythical creatures at sea, fantasy
+          pirates with powers, dark pirate fantasy, humorous pirate fantasy,
+          gritty pirate fantasy, best young adult pirate fantasy novels, fantasy
+          books about pirates for teenagers, where t find a good pirate fantasy
+          books
+        </p>
       </div>
     </>
   );
