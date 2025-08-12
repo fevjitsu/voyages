@@ -4,6 +4,8 @@ import "./App.css";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import YouTubeIcon from "@mui/icons-material/YouTube";
+import SportsEsportsOutlinedIcon from '@mui/icons-material/SportsEsportsOutlined';
+import ShoppingBasketOutlinedIcon from '@mui/icons-material/ShoppingBasketOutlined';
 function App() {
   return (
     <>
