@@ -80,7 +80,7 @@ function App() {
                 <a
                   style={{ color: "#f7f7f7" }}
                   href="https://www.amazon.ca/dp/B0DQJWVS97/ref=cbw_us_ca_dp_narx_gl_book"
-                  target="_blank">
+                  target="_blank"><ShoppingBasketOutlinedIcon />
                   Paperback Edition
                 </a>
               </button>
