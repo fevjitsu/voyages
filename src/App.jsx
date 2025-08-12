@@ -63,11 +63,13 @@ function App() {
           <div className="series-list-item">
             <h3>The Voyages of Victora : Volume one</h3>
             <div>
+<a href="https://www.amazon.ca/dp/B0DQJWVS97/ref=cbw_us_ca_dp_narx_gl_book" target="_blank">
               <img
                 src={voyagesOne}
                 width={440}
                 alt="A pirate ship at night on rough seas."
               />
+</a>
             </div>
             <div>
               <button
