@@ -4,7 +4,7 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import CoffeeIcon from '@mui/icons-material/Coffee';
 import StarIcon from '@mui/icons-material/Star';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import { recordDonation, getRecentDonations, getDonationStats } from '../firebase/donations';
+import { recordDonation, getRecentDonations, getDonationStats } from '../../functions/src/firebase/donations';
 
 const Donation = () => {
   const [donationStatus, setDonationStatus] = useState(null);
