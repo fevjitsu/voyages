@@ -6,7 +6,7 @@ const BookSeries = () => {
   return (
     <div>
       <h1 className="page-title">Book Series</h1>
-      
+
       <div className="series-list">
         <div className="series-list-item">
           <h3>The Voyages of Victora: Volume One</h3>
@@ -29,7 +29,7 @@ const BookSeries = () => {
           <img src={voyagesTwo} alt="A pirate ship at night on rough seas." className="book-image" />
           <div>
             <button className="btn" disabled style={{ opacity: 0.7 }}>
-              Coming This Fall!
+              Coming This Christmas!
             </button>
           </div>
           <p>

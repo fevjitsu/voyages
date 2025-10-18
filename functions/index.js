@@ -1,16 +1,16 @@
-import { 
-  collection, 
-  addDoc, 
-  getDocs, 
-  query, 
-  where, 
-  orderBy, 
+import {
+  collection,
+  addDoc,
+  getDocs,
+  query,
+  where,
+  orderBy,
   limit,
   serverTimestamp,
   doc,
   getDoc,
   updateDoc
-} from 'firebase/firestore';
+} from 'firebase/firestore'
 import { db } from './config';
 
 // Collection reference
@@ -40,10 +40,10 @@ export const recordDonation = async (donationData) => {
     };
 
     const docRef = await addDoc(collection(db, donationsCollection), donationWithTimestamp);
-    
+
     // Update donation statistics
     await updateDonationStats(donationData.amount);
-    
+
     return docRef.id;
   } catch (error) {
     console.error('Error recording donation:', error);
