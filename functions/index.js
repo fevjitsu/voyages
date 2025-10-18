@@ -1,215 +1,143 @@
-import {
-  collection,
-  addDoc,
-  getDocs,
-  query,
-  where,
-  orderBy,
-  limit,
-  serverTimestamp,
-  doc,
-  getDoc,
-  updateDoc
-} from 'firebase/firestore'
-import { db } from './config';
+// functions/index.js
+const functions = require('firebase-functions');
+const admin = require('firebase-admin');
+const Stripe = require('stripe');
+const cors = require('cors')({ origin: true });
 
-// Collection reference
-const donationsCollection = 'donations';
-const donationStatsCollection = 'donationStats';
+admin.initializeApp();
+const stripe = new Stripe(functions.config().stripe.secret_key, {
+  apiVersion: '2023-10-16',
+});
 
-/**
- * Record a new donation
- * @param {Object} donationData - Donation information
- * @param {string} donationData.donorName - Name of the donor (optional)
- * @param {string} donationData.donorEmail - Email of the donor (optional)
- * @param {number} donationData.amount - Donation amount
- * @param {string} donationData.currency - Currency code (default: 'USD')
- * @param {string} donationData.tier - Donation tier ('coffee', 'supporter', 'first_mate')
- * @param {string} donationData.message - Optional message from donor
- * @param {string} donationData.paymentMethod - Payment method used
- * @param {string} donationData.transactionId - Payment processor transaction ID
- * @param {string} donationData.status - Payment status ('pending', 'completed', 'failed')
- * @returns {Promise<string>} Document ID of the new donation
- */
-export const recordDonation = async (donationData) => {
+// Create Payment Intent
+exports.createPaymentIntent = functions.https.onRequest(async (req, res) => {
+  cors(req, res, async () => {
+    if (req.method !== 'POST') {
+      return res.status(405).send('Method Not Allowed');
+    }
+
+    try {
+      const { amount, currency = 'usd', donorInfo, tier } = req.body;
+
+      // Validate input
+      if (!amount || amount < 50) { // Minimum $0.50
+        return res.status(400).json({ error: 'Invalid amount' });
+      }
+
+      // Create payment intent
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: Math.round(amount),
+        currency,
+        metadata: {
+          donor_name: donorInfo.name || 'Anonymous',
+          donor_email: donorInfo.email || '',
+          tier: tier.id,
+        },
+      });
+
+      res.status(200).json({
+        clientSecret: paymentIntent.client_secret,
+        paymentIntentId: paymentIntent.id,
+      });
+    } catch (error) {
+      console.error('Error creating payment intent:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+});
+
+// Stripe Webhook Handler
+exports.stripeWebhook = functions.https.onRequest(async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  let event;
+
   try {
-    const donationWithTimestamp = {
-      ...donationData,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    };
+    event = stripe.webhooks.constructEvent(
+      req.rawBody,
+      sig,
+      functions.config().stripe.webhook_secret
+    );
+  } catch (err) {
+    console.error(`Webhook signature verification failed.`, err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
 
-    const docRef = await addDoc(collection(db, donationsCollection), donationWithTimestamp);
+  // Handle the event
+  switch (event.type) {
+    case 'payment_intent.succeeded':
+      await handleSuccessfulPayment(event.data.object);
+      break;
+    case 'payment_intent.payment_failed':
+      await handleFailedPayment(event.data.object);
+      break;
+    default:
+      console.log(`Unhandled event type ${event.type}`);
+  }
 
-    // Update donation statistics
-    await updateDonationStats(donationData.amount);
+  res.json({ received: true });
+});
 
-    return docRef.id;
+async function handleSuccessfulPayment(paymentIntent) {
+  const { donor_email, donor_name, tier } = paymentIntent.metadata;
+
+  try {
+    // Record donation in Firestore
+    await admin.firestore().collection('donations').add({
+      donorName: donor_name,
+      donorEmail: donor_email,
+      amount: paymentIntent.amount / 100, // Convert from cents
+      currency: paymentIntent.currency,
+      tier: tier,
+      paymentMethod: 'stripe',
+      status: 'completed',
+      transactionId: paymentIntent.id,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      showPublic: true,
+      showName: true,
+    });
+
+    // Update stats
+    await updateDonationStats(paymentIntent.amount / 100);
+
+    console.log(`Successfully recorded donation from ${donor_email}`);
   } catch (error) {
     console.error('Error recording donation:', error);
-    throw new Error('Failed to record donation: ' + error.message);
   }
-};
+}
 
-/**
- * Update donation statistics
- * @param {number} amount - Donation amount to add to statistics
- */
-export const updateDonationStats = async (amount) => {
+async function handleFailedPayment(paymentIntent) {
+  console.log(`Payment failed for ${paymentIntent.id}`);
+  // You might want to notify the user or log this for follow-up
+}
+
+async function updateDonationStats(amount) {
+  const statsRef = admin.firestore().collection('donationStats').doc('current');
+
   try {
-    const statsDocRef = doc(db, donationStatsCollection, 'current');
-    const statsDoc = await getDoc(statsDocRef);
+    await admin.firestore().runTransaction(async (transaction) => {
+      const statsDoc = await transaction.get(statsRef);
 
-    if (statsDoc.exists()) {
-      // Update existing stats
-      const currentStats = statsDoc.data();
-      await updateDoc(statsDocRef, {
-        totalAmount: currentStats.totalAmount + amount,
-        totalDonations: currentStats.totalDonations + 1,
-        lastDonationAmount: amount,
-        lastDonationAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      });
-    } else {
-      // Create new stats document
-      await addDoc(collection(db, donationStatsCollection), {
-        totalAmount: amount,
-        totalDonations: 1,
-        lastDonationAmount: amount,
-        lastDonationAt: serverTimestamp(),
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      });
-    }
+      if (statsDoc.exists) {
+        const currentStats = statsDoc.data();
+        transaction.update(statsRef, {
+          totalAmount: currentStats.totalAmount + amount,
+          totalDonations: currentStats.totalDonations + 1,
+          lastDonationAmount: amount,
+          lastDonationAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      } else {
+        transaction.set(statsRef, {
+          totalAmount: amount,
+          totalDonations: 1,
+          lastDonationAmount: amount,
+          lastDonationAt: admin.firestore.FieldValue.serverTimestamp(),
+          createdAt: admin.firestore.FieldValue.serverTimestamp(),
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      }
+    });
   } catch (error) {
     console.error('Error updating donation stats:', error);
-    // Don't throw error here as it shouldn't fail the main donation recording
   }
-};
-
-/**
- * Get recent donations (for public display)
- * @param {number} limitCount - Number of recent donations to fetch
- * @returns {Promise<Array>} Array of recent donations
- */
-export const getRecentDonations = async (limitCount = 10) => {
-  try {
-    const q = query(
-      collection(db, donationsCollection),
-      where('status', '==', 'completed'),
-      where('showPublic', '==', true),
-      orderBy('createdAt', 'desc'),
-      limit(limitCount)
-    );
-
-    const querySnapshot = await getDocs(q);
-    const donations = [];
-
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      donations.push({
-        id: doc.id,
-        donorName: data.showName ? data.donorName : 'Anonymous',
-        amount: data.amount,
-        tier: data.tier,
-        message: data.message,
-        createdAt: data.createdAt?.toDate() || new Date(),
-      });
-    });
-
-    return donations;
-  } catch (error) {
-    console.error('Error fetching recent donations:', error);
-    throw new Error('Failed to fetch donations: ' + error.message);
-  }
-};
-
-/**
- * Get donation statistics
- * @returns {Promise<Object>} Donation statistics
- */
-export const getDonationStats = async () => {
-  try {
-    const statsDocRef = doc(db, donationStatsCollection, 'current');
-    const statsDoc = await getDoc(statsDocRef);
-
-    if (statsDoc.exists()) {
-      return statsDoc.data();
-    } else {
-      return {
-        totalAmount: 0,
-        totalDonations: 0,
-        lastDonationAmount: 0,
-        lastDonationAt: null,
-      };
-    }
-  } catch (error) {
-    console.error('Error fetching donation stats:', error);
-    throw new Error('Failed to fetch donation statistics: ' + error.message);
-  }
-};
-
-/**
- * Get donations by email (for user to see their donations)
- * @param {string} email - Donor's email
- * @returns {Promise<Array>} Array of user's donations
- */
-export const getDonationsByEmail = async (email) => {
-  try {
-    const q = query(
-      collection(db, donationsCollection),
-      where('donorEmail', '==', email),
-      orderBy('createdAt', 'desc')
-    );
-
-    const querySnapshot = await getDocs(q);
-    const donations = [];
-
-    querySnapshot.forEach((doc) => {
-      donations.push({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate() || new Date(),
-      });
-    });
-
-    return donations;
-  } catch (error) {
-    console.error('Error fetching donations by email:', error);
-    throw new Error('Failed to fetch user donations: ' + error.message);
-  }
-};
-
-/**
- * Update donation status (for webhook handling)
- * @param {string} donationId - Document ID of the donation
- * @param {string} status - New status ('completed', 'failed')
- * @param {string} transactionId - Payment processor transaction ID
- */
-export const updateDonationStatus = async (donationId, status, transactionId = null) => {
-  try {
-    const donationRef = doc(db, donationsCollection, donationId);
-    const updateData = {
-      status,
-      updatedAt: serverTimestamp(),
-    };
-
-    if (transactionId) {
-      updateData.transactionId = transactionId;
-    }
-
-    await updateDoc(donationRef, updateData);
-
-    // If status is completed, update stats
-    if (status === 'completed') {
-      const donationDoc = await getDoc(donationRef);
-      if (donationDoc.exists()) {
-        const donationData = donationDoc.data();
-        await updateDonationStats(donationData.amount);
-      }
-    }
-  } catch (error) {
-    console.error('Error updating donation status:', error);
-    throw new Error('Failed to update donation status: ' + error.message);
-  }
-};
+}

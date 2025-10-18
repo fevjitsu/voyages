@@ -5,7 +5,7 @@ import BookSeries from './pages/BookSeries';
 import Donation from './pages/Donation';
 import Layout from './components/Layout';
 import './App.css';
-import '../src/firebaseConnection/firebase';
+import '../src/firebase/config';
 
 function App() {
   return (
