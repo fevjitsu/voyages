@@ -29,7 +29,6 @@
       "source": "functions"
     },
     {
-      "source": "voyagescodebase",
       "codebase": "voyagescodebase",
       "ignore": [
         "node_modules",
@@ -40,7 +39,19 @@
       ],
       "predeploy": [
         "npm --prefix \"$RESOURCE_DIR\" run lint"
-      ]
+      ],
+      "source": "voyagescodebase"
+    },
+    {
+      "codebase": "voyages-codebase",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log",
+        "*.local"
+      ],
+      "source": "voyages-codebase"
     }
   ]
 }

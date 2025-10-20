@@ -310,6 +310,7 @@ body {
 
 .series-list-item p {
   font-family: var(--font-body);
+  font-size: 1.6rem;
   line-height: 1.6;
   color: var(--text-gray);
   margin-bottom: 1.5rem;

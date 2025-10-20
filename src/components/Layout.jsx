@@ -19,15 +19,15 @@ const Layout = ({ children }) => {
             <Link to="/" className="logo" onClick={() => setMobileMenuOpen(false)}>
               The Voyages of Victora
             </Link>
-            
+
             <button className="mobile-menu-btn" onClick={toggleMobileMenu}>
               {mobileMenuOpen ? <CloseIcon /> : <MenuIcon />}
             </button>
 
             <ul className={`nav-menu ${mobileMenuOpen ? 'active' : ''}`}>
               <li>
-                <Link 
-                  to="/" 
+                <Link
+                  to="/"
                   className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
@@ -35,8 +35,8 @@ const Layout = ({ children }) => {
                 </Link>
               </li>
               <li>
-                <Link 
-                  to="/book-series" 
+                <Link
+                  to="/book-series"
                   className={`nav-link ${location.pathname === '/book-series' ? 'active' : ''}`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
@@ -44,15 +44,15 @@ const Layout = ({ children }) => {
                 </Link>
               </li>
               <li>
-                <Link 
-                  to="/about" 
+                <Link
+                  to="/about"
                   className={`nav-link ${location.pathname === '/about' ? 'active' : ''}`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   About
                 </Link>
               </li>
-              <li>
+              {/* <li>
                 <Link 
                   to="/donation" 
                   className={`nav-link ${location.pathname === '/donation' ? 'active' : ''}`}
@@ -60,7 +60,7 @@ const Layout = ({ children }) => {
                 >
                   Support
                 </Link>
-              </li>
+              </li> */}
             </ul>
           </nav>
         </div>
