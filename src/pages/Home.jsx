@@ -5,6 +5,7 @@ import InstagramIcon from "@mui/icons-material/Instagram";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import YouTubeIcon from "@mui/icons-material/YouTube";
 import ShoppingBasketOutlinedIcon from '@mui/icons-material/ShoppingBasketOutlined';
+import ReadOnlineModal from '../components/ReadOnlineModal';
 
 const Home = () => {
   return (
@@ -12,7 +13,7 @@ const Home = () => {
       <section className="hero">
         <h1>The Voyages of Victora</h1>
         <h3>Embark on a thrilling adventure with Captain Bartley and his eclectic crew.</h3>
-        
+
         <div className="social-links">
           <a href="https://www.facebook.com/profile.php?id=61569913277354" target="_blank" rel="noopener noreferrer" className="social-link">
             <FacebookIcon className="social-icon" />
@@ -35,12 +36,77 @@ const Home = () => {
           <div className="series-list-item">
             <h3>The Voyages of Victora: Volume One</h3>
             <img src={voyagesOne} alt="A pirate ship at night on rough seas." className="book-image" />
-            <div>
-              <a href="https://www.amazon.ca/dp/B0DQJWVS97/ref=cbw_us_ca_dp_narx_gl_book" target="_blank" rel="noopener noreferrer" className="btn">
+
+            <div style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: '8px',
+              marginBottom: '1.5rem'
+            }}>
+              <ReadOnlineModal buttonText="Read Online" />
+
+              <a href="https://www.amazon.ca/dp/B0DQJWVS97/ref=cbw_us_ca_dp_narx_gl_book"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn"
+                style={{ margin: '0' }}>
                 <ShoppingBasketOutlinedIcon />
                 Paperback Edition
               </a>
-              <Link to="/book-series" className="btn btn-outline">
+
+              <a
+                href="/The Voyages of Victora.epub"
+                download="The Voyages of Victora.epub"
+                className="btn"
+                style={{
+                  background: 'linear-gradient(135deg, #20c997 0%, #1e90ff 100%)',
+                  padding: '0.75rem 1.5rem',
+                  borderRadius: '8px',
+                  color: 'white',
+                  textDecoration: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  fontWeight: '600',
+                  transition: 'all 0.3s ease',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontFamily: 'var(--font-accent, "Crimson Text", Georgia, serif)',
+                  margin: '0',
+                  fontSize: 'clamp(0.8rem, 3.5vw, 1rem)'
+                }}
+              >
+                📖 EPUB
+              </a>
+
+              <a
+                href="/The Voyages of Victora.pdf"
+                download="The Voyages of Victora.pdf"
+                className="btn"
+                style={{
+                  background: 'linear-gradient(135deg, #20c997 0%, #1e90ff 100%)',
+                  padding: '0.75rem 1.5rem',
+                  borderRadius: '8px',
+                  color: 'white',
+                  textDecoration: 'none',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  fontWeight: '600',
+                  transition: 'all 0.3s ease',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontFamily: 'var(--font-accent, "Crimson Text", Georgia, serif)',
+                  margin: '0',
+                  fontSize: 'clamp(0.8rem, 3.5vw, 1rem)'
+                }}
+              >
+                📄 PDF
+              </a>
+
+              <Link to="/book-series" className="btn btn-outline" style={{ margin: '0' }}>
                 Learn More
               </Link>
             </div>
